@@ -544,8 +544,6 @@ interface ITellor {
     function totalSupply() external view returns (uint256);
 }
 
-// SPDX-License-Identifier: MIT
-
 pragma solidity >=0.5.16 <0.8.0;
 
 library SafeMath {
@@ -849,10 +847,7 @@ contract Oracle is Ownable {
     }
 }
 
-// SPDX-License-Identifier: MIT
 pragma solidity >=0.5.16 <0.8.0;
-
-import "./ITellor.sol";
 
 /**
  * @title UserContract
