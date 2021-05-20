@@ -4,6 +4,8 @@ pragma solidity >=0.6.0 <0.8.0;
 
 
 pragma solidity >=0.6.0 <0.8.0;
+
+
 /**
  * @title Various utilities useful for uint256.
  */
@@ -23,6 +25,8 @@ library UInt256Lib {
         return int256(a);
     }
 }
+pragma solidity >=0.6.0 <0.8.0;
+
 /*
  * @dev Provides information about the current execution context, including the
  * sender of the transaction and its data. While these are generally available
@@ -672,7 +676,6 @@ MIT License
 Copyright (c) 2018 requestnetwork
 Copyright (c) 2018 Fragments, Inc.
 Copyright (c) 2020 Base Protocol, Inc.
-Copyright (c) 2021 Wrapp3d, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -840,7 +843,7 @@ abstract contract ERC677Token is ERC677 {
     }
 }
 
-// File: contracts/D100Token.sol
+// File: contracts/GLENTYToken.sol
 
 pragma solidity >=0.6.0 <0.8.0;
 
@@ -849,29 +852,29 @@ pragma solidity >=0.6.0 <0.8.0;
 
 
 /**
- * @title D100 ERC20 token
+ * @title GLENTY ERC20 token
  * @dev This is part of an implementation of the DEFI100 protocol.
- *      D100 is a normal ERC20 token, but its supply can be adjusted by splitting and
+ *      GLENTY is a normal ERC20 token, but its supply can be adjusted by splitting and
  *      combining tokens proportionally across all wallets.
  *
- *      D100 balances are internally represented with a hidden denomination, 'shares'.
+ *      GLENTY balances are internally represented with a hidden denomination, 'shares'.
  *      We support splitting the currency in expansion and combining the currency on contraction by
- *      changing the exchange rate between the hidden 'shares' and the public 'D100'.
+ *      changing the exchange rate between the hidden 'shares' and the public 'GLENTY'.
  */
-contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
+contract GLENTYToken is ERC20("CRYPTO 100", "GLENTY"), ERC677Token, Ownable {
     // PLEASE READ BEFORE CHANGING ANY ACCOUNTING OR MATH
     // Anytime there is division, there is a risk of numerical instability from rounding errors. In
     // order to minimize this risk, we adhere to the following guidelines:
-    // 1) The conversion rate adopted is the number of shares that equals 1 D100.
+    // 1) The conversion rate adopted is the number of shares that equals 1 GLENTY.
     //    The inverse rate must not be used--totalShares is always the numerator and _totalSupply is
-    //    always the denominator. (i.e. If you want to convert shares to D100 instead of
+    //    always the denominator. (i.e. If you want to convert shares to GLENTY instead of
     //    multiplying by the inverse rate, you should divide by the normal rate)
-    // 2) Share balances converted into D100Token are always rounded down (truncated).
+    // 2) Share balances converted into GLENTYToken are always rounded down (truncated).
     //
     // We make the following guarantees:
-    // - If address 'A' transfers x D100Token to address 'B'. A's resulting external balance will
-    //   be decreased by precisely x D100Token, and B's external balance will be precisely
-    //   increased by x D100Token.
+    // - If address 'A' transfers x GLENTYToken to address 'B'. A's resulting external balance will
+    //   be decreased by precisely x GLENTYToken, and B's external balance will be precisely
+    //   increased by x GLENTYToken.
     //
     // We do not guarantee that the sum of all balances equals the result of calling totalSupply().
     // This is because, for any conversion function 'f()' that has non-zero rounding error,
@@ -901,14 +904,14 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
 
     uint256 private _totalShares;
     uint256 private _totalSupply;
-    uint256 private _sharesPerD100;
+    uint256 private _sharesPerGLENTY;
     mapping(address => uint256) private _shareBalances;
 
     mapping(address => bool) public bannedUsers;
 
-    // This is denominated in D100Token, because the shares-D100 conversion might change before
+    // This is denominated in GLENTYToken, because the shares-GLENTY conversion might change before
     // it's fully paid.
-    mapping(address => mapping(address => uint256)) private _allowedD100;
+    mapping(address => mapping(address => uint256)) private _allowedGLENTY;
 
     bool public transfersPaused;
     bool public rebasesPaused;
@@ -921,7 +924,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
         _totalShares = INITIAL_SHARES;
         _totalSupply = INITIAL_SUPPLY;
         _shareBalances[owner()] = _totalShares;
-        _sharesPerD100 = _totalShares.div(_totalSupply);
+        _sharesPerGLENTY = _totalShares.div(_totalSupply);
 
         emit Transfer(address(0x0), owner(), _totalSupply);
     }
@@ -954,9 +957,9 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
     }
 
     /**
-     * @dev Notifies D100Token contract about a new rebase cycle.
-     * @param supplyDelta The number of new D100 tokens to add into circulation via expansion.
-     * @return The total number of D100 after the supply adjustment.
+     * @dev Notifies GLENTYToken contract about a new rebase cycle.
+     * @param supplyDelta The number of new GLENTY tokens to add into circulation via expansion.
+     * @return The total number of GLENTY after the supply adjustment.
      */
     function rebase(uint256 epoch, int256 supplyDelta)
         external
@@ -980,10 +983,10 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             _totalSupply = MAX_SUPPLY;
         }
 
-        _sharesPerD100 = _totalShares.div(_totalSupply);
+        _sharesPerGLENTY = _totalShares.div(_totalSupply);
 
-        // From this point forward, _sharesPerD100 is taken as the source of truth.
-        // We recalculate a new _totalSupply to be in agreement with the _sharesPerD100
+        // From this point forward, _sharesPerGLENTY is taken as the source of truth.
+        // We recalculate a new _totalSupply to be in agreement with the _sharesPerGLENTY
         // conversion rate.
         // This means our applied supplyDelta can deviate from the requested supplyDelta,
         // but this deviation is guaranteed to be < (_totalSupply^2)/(totalShares - _totalSupply).
@@ -1014,7 +1017,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
     }
 
     /**
-     * @return The total number of D100.
+     * @return The total number of GLENTY.
      */
     function totalSupply() public view override returns (uint256) {
         return _totalSupply;
@@ -1025,7 +1028,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
      * @return The balance of the specified address.
      */
     function balanceOf(address who) public view override returns (uint256) {
-        return _shareBalances[who].div(_sharesPerD100);
+        return _shareBalances[who].div(_sharesPerGLENTY);
     }
 
     /**
@@ -1046,7 +1049,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             "paused"
         );
 
-        uint256 shareValue = value.mul(_sharesPerD100);
+        uint256 shareValue = value.mul(_sharesPerGLENTY);
         _shareBalances[msg.sender] = _shareBalances[msg.sender].sub(shareValue);
         _shareBalances[to] = _shareBalances[to].add(shareValue);
         emit Transfer(msg.sender, to, value);
@@ -1065,7 +1068,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
         override
         returns (uint256)
     {
-        return _allowedD100[owner_][spender];
+        return _allowedGLENTY[owner_][spender];
     }
 
     /**
@@ -1085,11 +1088,11 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             "paused"
         );
 
-        _allowedD100[from][msg.sender] = _allowedD100[from][msg.sender].sub(
+        _allowedGLENTY[from][msg.sender] = _allowedGLENTY[from][msg.sender].sub(
             value
         );
 
-        uint256 shareValue = value.mul(_sharesPerD100);
+        uint256 shareValue = value.mul(_sharesPerGLENTY);
         _shareBalances[from] = _shareBalances[from].sub(shareValue);
         _shareBalances[to] = _shareBalances[to].add(shareValue);
         emit Transfer(from, to, value);
@@ -1118,7 +1121,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             "paused"
         );
 
-        _allowedD100[msg.sender][spender] = value;
+        _allowedGLENTY[msg.sender][spender] = value;
         emit Approval(msg.sender, spender, value);
         return true;
     }
@@ -1140,9 +1143,9 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             "paused"
         );
 
-        _allowedD100[msg.sender][spender] = _allowedD100[msg.sender][spender]
+        _allowedGLENTY[msg.sender][spender] = _allowedGLENTY[msg.sender][spender]
             .add(addedValue);
-        emit Approval(msg.sender, spender, _allowedD100[msg.sender][spender]);
+        emit Approval(msg.sender, spender, _allowedGLENTY[msg.sender][spender]);
         return true;
     }
 
@@ -1162,13 +1165,13 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             "paused"
         );
 
-        uint256 oldValue = _allowedD100[msg.sender][spender];
+        uint256 oldValue = _allowedGLENTY[msg.sender][spender];
         if (subtractedValue >= oldValue) {
-            _allowedD100[msg.sender][spender] = 0;
+            _allowedGLENTY[msg.sender][spender] = 0;
         } else {
-            _allowedD100[msg.sender][spender] = oldValue.sub(subtractedValue);
+            _allowedGLENTY[msg.sender][spender] = oldValue.sub(subtractedValue);
         }
-        emit Approval(msg.sender, spender, _allowedD100[msg.sender][spender]);
+        emit Approval(msg.sender, spender, _allowedGLENTY[msg.sender][spender]);
         return true;
     }
 }
@@ -1176,11 +1179,6 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
 interface IOracle {
     function getData() external view returns (uint256, bool);
     function update() external;
-}
-
-interface IDIAOracle {
-    function getValue(string memory) external view returns (uint128, uint128);
-    function setValue(string memory, uint128, uint128) external;
 }
 
 interface ISync {
@@ -1194,17 +1192,16 @@ interface IGulp {
 */
 
 /**
- * @title D100Token Monetary Supply Policy
- * @dev This is an implementation of the D100Token protocol.
- *      D100Token operates symmetrically on expansion and contraction. It will both split and
+ * @title GLENTYToken Monetary Supply Policy
+ * @dev This is an implementation of the GLENTYToken protocol.
+ *      GLENTYToken operates symmetrically on expansion and contraction. It will both split and
  *      combine coins to maintain a stable unit price.
  *
- *      This component regulates the token supply of the D100Token ERC20 token in response to
+ *      This component regulates the token supply of the GLENTYToken ERC20 token in response to
  *      market oracles.
  */
-contract D100TokenMonetaryPolicy is Ownable {
+contract GLENTYTokenMonetaryPolicy is Ownable {
     using SafeMath for uint256;
-    using SafeMath for uint128;
     using SafeMathInt for int256;
     using UInt256Lib for uint256;
 
@@ -1217,13 +1214,16 @@ contract D100TokenMonetaryPolicy is Ownable {
     );
     event Incentivization(address indexed account, uint256 amount);
 
-    D100Token public D100;
+    GLENTYToken public GLENTY;
 
     uint256 public incentiveLimit = 300 * 1e9;
 
+    // Provides the current market cap, as an 18 decimal fixed point number.
+    IOracle public mktcapOracle;
+
     // Market oracle provides the token/USD exchange rate as an 18 decimal fixed point number.
-    // (eg) An oracle value of 1.5e5 it would mean 1 D100 is trading for $1.50.
-    IDIAOracle public diaOracle;
+    // (eg) An oracle value of 1.5e18 it would mean 1 GLENTY is trading for $1.50.
+    IOracle public tokenPriceOracle;
 
     // If the current exchange rate is within this fractional distance from the target, no supply
     // update is performed. Fixed point number--same format as the rate.
@@ -1262,11 +1262,11 @@ contract D100TokenMonetaryPolicy is Ownable {
 
     address[] public unipairs;
 
-    function setD100Token(address _D100)
+    function setGLENTYToken(address _GLENTY)
         external
         onlyOwner
     {
-        D100 = D100Token(_D100);
+        GLENTY = GLENTYToken(_GLENTY);
     }
 
     /**
@@ -1274,23 +1274,23 @@ contract D100TokenMonetaryPolicy is Ownable {
      *
      * @dev The supply adjustment equals (_totalSupply * DeviationFromTargetRate) / rebaseLag
      *      Where DeviationFromTargetRate is (TokenPriceOracleRate - targetPrice) / targetPrice
-     *      and targetPrice is MktcapOracleRate / D100Mktcap
+     *      and targetPrice is MktcapOracleRate / GLENTYMktcap
      */
     function rebase() external {
         //require(msg.sender == orchestrator, "you are not the orchestrator");
         require(inRebaseWindow(), "the rebase window is closed");
 
         // This comparison also ensures there is no reentrancy.
-        require(lastRebaseTimestampSec.add(minRebaseTimeIntervalSec) < block.timestamp, "cannot rebase yet");
+        require(lastRebaseTimestampSec.add(minRebaseTimeIntervalSec) < now, "cannot rebase yet");
 
 
         uint256 incentive = calcIncentive();
 
         // Snap the rebase time to the start of this window.
-        lastRebaseTimestampSec = block.timestamp.sub(block.timestamp.mod(minRebaseTimeIntervalSec)).add(rebaseWindowOffsetSec);
+        lastRebaseTimestampSec = now.sub(now.mod(minRebaseTimeIntervalSec)).add(rebaseWindowOffsetSec);
 
          if (incentive > 0) {
-            D100.transfer(msg.sender, incentive); // before rebase()
+            GLENTY.transfer(msg.sender, incentive); // before rebase()
             emit Incentivization(msg.sender, incentive);
         }
 
@@ -1298,29 +1298,31 @@ contract D100TokenMonetaryPolicy is Ownable {
 
         (int256 supplyDelta, uint256 mktcap, uint256 tokenPrice) = getNextSupplyDelta();
 
+        tokenPriceOracle.update();
+
         if (supplyDelta == 0) {
-            emit LogRebase(epoch, tokenPrice, mktcap, supplyDelta, block.timestamp);
+            emit LogRebase(epoch, tokenPrice, mktcap, supplyDelta, now);
             return;
         }
 
-        if (supplyDelta > 0 && D100.totalSupply().add(uint256(supplyDelta)) > MAX_SUPPLY) {
-            supplyDelta = (MAX_SUPPLY.sub(D100.totalSupply())).toInt256Safe();
+        if (supplyDelta > 0 && GLENTY.totalSupply().add(uint256(supplyDelta)) > MAX_SUPPLY) {
+            supplyDelta = (MAX_SUPPLY.sub(GLENTY.totalSupply())).toInt256Safe();
         }
 
-        uint256 supplyAfterRebase = D100.rebase(epoch, supplyDelta);
+        uint256 supplyAfterRebase = GLENTY.rebase(epoch, supplyDelta);
         assert(supplyAfterRebase <= MAX_SUPPLY);
         
         sync();
         
-        emit LogRebase(epoch, tokenPrice, mktcap, supplyDelta, block.timestamp);
+        emit LogRebase(epoch, tokenPrice, mktcap, supplyDelta, now);
     }
 
 
     function calcIncentive() public view returns (uint256 incentive) {
-        if (inRebaseWindow() && block.timestamp > lastRebaseTimestampSec.add(minRebaseTimeIntervalSec)) {
-            uint256 D100Balance = D100.balanceOf(address(this));
-            uint256 realLimit = D100Balance <= incentiveLimit ? D100Balance : incentiveLimit;
-            uint256 auction_price = block.timestamp.mod(minRebaseTimeIntervalSec).sub(rebaseWindowOffsetSec).div(5).mul(1e9); 
+        if (inRebaseWindow() && now > lastRebaseTimestampSec.add(minRebaseTimeIntervalSec)) {
+            uint256 GLENTYBalance = GLENTY.balanceOf(address(this));
+            uint256 realLimit = GLENTYBalance <= incentiveLimit ? GLENTYBalance : incentiveLimit;
+            uint256 auction_price = now.mod(minRebaseTimeIntervalSec).sub(rebaseWindowOffsetSec).div(5).mul(1e9); 
             incentive = auction_price <= realLimit ? auction_price : realLimit;
         } else { 
             incentive = 0;
@@ -1332,30 +1334,28 @@ contract D100TokenMonetaryPolicy is Ownable {
         external 
         onlyOwner 
     {   
-        D100.transfer(msg.sender, amount);
+        GLENTY.transfer(msg.sender, amount);
     }
 
     function getNextSupplyDelta()
         public view
-        returns (int256, uint256, uint256)
+        returns (int256 supplyDelta, uint256 mktcap, uint256 tokenPrice)
     {
-        uint128 mktcapFromOracle = 0;
-        uint128 mktcapUpdated = 0;
-        (mktcapFromOracle, mktcapUpdated) = diaOracle.getValue("Defi100");
-        require(block.timestamp - mktcapUpdated < 90000, "invalid mktcap");
+        uint256 mktcap;
+        bool mktcapValid;
+        (mktcap, mktcapValid) = mktcapOracle.getData();
+        require(mktcapValid, "invalid mktcap");
 
-        uint128 tokenPriceFromOracle = 0;
-        uint128 tokenPriceUpdated = 0;
-        (tokenPriceFromOracle, tokenPriceUpdated) = diaOracle.getValue("D100");
-        require(block.timestamp.sub(tokenPriceUpdated) < 90000, "invalid token price");
+        uint256 tokenPrice;
+        bool tokenPriceValid;
+        (tokenPrice, tokenPriceValid) = tokenPriceOracle.getData();
+        require(tokenPriceValid, "invalid token price");
 
-        uint256 mktcap = (uint256)(mktcapFromOracle).mul(10 ** (DECIMALS - 5));
-        uint256 tokenPrice = (uint256)(tokenPriceFromOracle).mul(10 ** (DECIMALS - 5));
         if (tokenPrice > MAX_RATE) {
             tokenPrice = MAX_RATE;
         }
 
-        int256 supplyDelta = computeSupplyDelta(tokenPrice, mktcap);
+        supplyDelta = computeSupplyDelta(tokenPrice, mktcap);
 
         // Apply the Dampening factor.
         supplyDelta = supplyDelta.div(rebaseLag.toInt256Safe());
@@ -1388,16 +1388,26 @@ contract D100TokenMonetaryPolicy is Ownable {
         }
     }
     
-
     /**
-     * @notice Sets the reference to the token price oracle.
-     * @param diaOracle_ The address of the token price oracle contract.
+     * @notice Sets the reference to the market cap oracle.
+     * @param mktcapOracle_ The address of the mktcap oracle contract.
      */
-    function setDIAOracle(IDIAOracle diaOracle_)
+    function setmktcapOracle(IOracle mktcapOracle_)
         external
         onlyOwner
     {
-        diaOracle = diaOracle_;
+        mktcapOracle = mktcapOracle_;
+    }
+
+    /**
+     * @notice Sets the reference to the token price oracle.
+     * @param tokenPriceOracle_ The address of the token price oracle contract.
+     */
+    function setTokenPriceOracle(IOracle tokenPriceOracle_)
+        external
+        onlyOwner
+    {
+        tokenPriceOracle = tokenPriceOracle_;
     }
 
     function setIncentiveLimit(uint256 newIncentiveLimit)
@@ -1463,7 +1473,7 @@ contract D100TokenMonetaryPolicy is Ownable {
         rebaseWindowLengthSec = rebaseWindowLengthSec_;
     }
 
-    constructor (D100Token D100_, IDIAOracle diaOracle_)
+    constructor (GLENTYToken GLENTY_, IOracle tokenPriceOracle_, IOracle mktcapOracle_)
         public
     {
         deviationThreshold = 0;
@@ -1475,8 +1485,10 @@ contract D100TokenMonetaryPolicy is Ownable {
         deviationThreshold = 50000000000000000; // 5%
         epoch = 0;
 
-        D100 = D100_;
-        diaOracle = diaOracle_;
+        GLENTY = GLENTY_;
+        tokenPriceOracle = tokenPriceOracle_;
+        mktcapOracle = mktcapOracle_;
+        
     }
 
     /**
@@ -1485,8 +1497,8 @@ contract D100TokenMonetaryPolicy is Ownable {
      */
     function inRebaseWindow() public view returns (bool) {
         return (
-            block.timestamp.mod(minRebaseTimeIntervalSec) >= rebaseWindowOffsetSec &&
-            block.timestamp.mod(minRebaseTimeIntervalSec) < (rebaseWindowOffsetSec.add(rebaseWindowLengthSec))
+            now.mod(minRebaseTimeIntervalSec) >= rebaseWindowOffsetSec &&
+            now.mod(minRebaseTimeIntervalSec) < (rebaseWindowOffsetSec.add(rebaseWindowLengthSec))
         );
     }
 
@@ -1506,7 +1518,7 @@ contract D100TokenMonetaryPolicy is Ownable {
         // supplyDelta = totalSupply * (price - targetPrice) / targetPrice
         int256 pricex1T       = price.mul(100000000000).toInt256Safe();
         int256 targetPricex1T = mktcap.toInt256Safe();
-        return D100.totalSupply().toInt256Safe()
+        return GLENTY.totalSupply().toInt256Safe()
             .mul(pricex1T.sub(targetPricex1T))
             .div(targetPricex1T);
     }
