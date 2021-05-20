@@ -1,8 +1,4 @@
-// File: @openzeppelin/contracts/GSN/Context.sol
-
-// SPDX-License-Identifier: MIT
-
-pragma solidity >=0.6.0 <0.8.0;
+    pragma solidity >=0.6.0 <0.8.0;
 
 /*
  * @dev Provides information about the current execution context, including the
@@ -820,7 +816,7 @@ abstract contract ERC677Token is ERC677 {
     }
 }
 
-// File: contracts/D100Token.sol
+// File: contracts/GlentyToken.sol
 
 pragma solidity >=0.6.0 <0.8.0;
 
@@ -829,29 +825,29 @@ pragma solidity >=0.6.0 <0.8.0;
 
 
 /**
- * @title D100 ERC20 token
+ * @title GLENTY ERC20 token
  * @dev This is part of an implementation of the DEFI100 protocol.
- *      D100 is a normal ERC20 token, but its supply can be adjusted by splitting and
+ *      GLENTY is a normal ERC20 token, but its supply can be adjusted by splitting and
  *      combining tokens proportionally across all wallets.
  *
- *      D100 balances are internally represented with a hidden denomination, 'shares'.
+ *      GLENTY balances are internally represented with a hidden denomination, 'shares'.
  *      We support splitting the currency in expansion and combining the currency on contraction by
- *      changing the exchange rate between the hidden 'shares' and the public 'D100'.
+ *      changing the exchange rate between the hidden 'shares' and the public 'GLENTY'.
  */
-contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
+contract GLENTYToken is ERC20("CRYPTO 100", "GLENTY"), ERC677Token, Ownable {
     // PLEASE READ BEFORE CHANGING ANY ACCOUNTING OR MATH
     // Anytime there is division, there is a risk of numerical instability from rounding errors. In
     // order to minimize this risk, we adhere to the following guidelines:
-    // 1) The conversion rate adopted is the number of shares that equals 1 D100.
+    // 1) The conversion rate adopted is the number of shares that equals 1 GLENTY.
     //    The inverse rate must not be used--totalShares is always the numerator and _totalSupply is
-    //    always the denominator. (i.e. If you want to convert shares to D100 instead of
+    //    always the denominator. (i.e. If you want to convert shares to GLENTY instead of
     //    multiplying by the inverse rate, you should divide by the normal rate)
-    // 2) Share balances converted into D100Token are always rounded down (truncated).
+    // 2) Share balances converted into GLENTYToken are always rounded down (truncated).
     //
     // We make the following guarantees:
-    // - If address 'A' transfers x D100Token to address 'B'. A's resulting external balance will
-    //   be decreased by precisely x D100Token, and B's external balance will be precisely
-    //   increased by x D100Token.
+    // - If address 'A' transfers x GLENTYToken to address 'B'. A's resulting external balance will
+    //   be decreased by precisely x GLENTYToken, and B's external balance will be precisely
+    //   increased by x GLENTYToken.
     //
     // We do not guarantee that the sum of all balances equals the result of calling totalSupply().
     // This is because, for any conversion function 'f()' that has non-zero rounding error,
@@ -881,14 +877,14 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
 
     uint256 private _totalShares;
     uint256 private _totalSupply;
-    uint256 private _sharesPerD100;
+    uint256 private _sharesPerGLENTY;
     mapping(address => uint256) private _shareBalances;
 
     mapping(address => bool) public bannedUsers;
 
-    // This is denominated in D100Token, because the shares-D100 conversion might change before
+    // This is denominated in GLENTYToken, because the shares-GLENTY conversion might change before
     // it's fully paid.
-    mapping(address => mapping(address => uint256)) private _allowedD100;
+    mapping(address => mapping(address => uint256)) private _allowedGLENTY;
 
     bool public transfersPaused;
     bool public rebasesPaused;
@@ -901,7 +897,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
         _totalShares = INITIAL_SHARES;
         _totalSupply = INITIAL_SUPPLY;
         _shareBalances[owner()] = _totalShares;
-        _sharesPerD100 = _totalShares.div(_totalSupply);
+        _sharesPerGLENTY = _totalShares.div(_totalSupply);
 
         emit Transfer(address(0x0), owner(), _totalSupply);
     }
@@ -934,9 +930,9 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
     }
 
     /**
-     * @dev Notifies D100Token contract about a new rebase cycle.
-     * @param supplyDelta The number of new D100 tokens to add into circulation via expansion.
-     * @return The total number of D100 after the supply adjustment.
+     * @dev Notifies GLENTYToken contract about a new rebase cycle.
+     * @param supplyDelta The number of new GLENTY tokens to add into circulation via expansion.
+     * @return The total number of GLENTY after the supply adjustment.
      */
     function rebase(uint256 epoch, int256 supplyDelta)
         external
@@ -960,10 +956,10 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             _totalSupply = MAX_SUPPLY;
         }
 
-        _sharesPerD100 = _totalShares.div(_totalSupply);
+        _sharesPerGLENTY = _totalShares.div(_totalSupply);
 
-        // From this point forward, _sharesPerD100 is taken as the source of truth.
-        // We recalculate a new _totalSupply to be in agreement with the _sharesPerD100
+        // From this point forward, _sharesPerGLENTY is taken as the source of truth.
+        // We recalculate a new _totalSupply to be in agreement with the _sharesPerGLENTY
         // conversion rate.
         // This means our applied supplyDelta can deviate from the requested supplyDelta,
         // but this deviation is guaranteed to be < (_totalSupply^2)/(totalShares - _totalSupply).
@@ -994,7 +990,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
     }
 
     /**
-     * @return The total number of D100.
+     * @return The total number of GLENTY.
      */
     function totalSupply() public view override returns (uint256) {
         return _totalSupply;
@@ -1005,7 +1001,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
      * @return The balance of the specified address.
      */
     function balanceOf(address who) public view override returns (uint256) {
-        return _shareBalances[who].div(_sharesPerD100);
+        return _shareBalances[who].div(_sharesPerGLENTY);
     }
 
     /**
@@ -1026,7 +1022,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             "paused"
         );
 
-        uint256 shareValue = value.mul(_sharesPerD100);
+        uint256 shareValue = value.mul(_sharesPerGLENTY);
         _shareBalances[msg.sender] = _shareBalances[msg.sender].sub(shareValue);
         _shareBalances[to] = _shareBalances[to].add(shareValue);
         emit Transfer(msg.sender, to, value);
@@ -1045,7 +1041,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
         override
         returns (uint256)
     {
-        return _allowedD100[owner_][spender];
+        return _allowedGLENTY[owner_][spender];
     }
 
     /**
@@ -1065,11 +1061,11 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             "paused"
         );
 
-        _allowedD100[from][msg.sender] = _allowedD100[from][msg.sender].sub(
+        _allowedGLENTY[from][msg.sender] = _allowedGLENTY[from][msg.sender].sub(
             value
         );
 
-        uint256 shareValue = value.mul(_sharesPerD100);
+        uint256 shareValue = value.mul(_sharesPerGLENTY);
         _shareBalances[from] = _shareBalances[from].sub(shareValue);
         _shareBalances[to] = _shareBalances[to].add(shareValue);
         emit Transfer(from, to, value);
@@ -1098,7 +1094,7 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             "paused"
         );
 
-        _allowedD100[msg.sender][spender] = value;
+        _allowedGLENTY[msg.sender][spender] = value;
         emit Approval(msg.sender, spender, value);
         return true;
     }
@@ -1120,9 +1116,9 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             "paused"
         );
 
-        _allowedD100[msg.sender][spender] = _allowedD100[msg.sender][spender]
+        _allowedGLENTY[msg.sender][spender] = _allowedGLENTY[msg.sender][spender]
             .add(addedValue);
-        emit Approval(msg.sender, spender, _allowedD100[msg.sender][spender]);
+        emit Approval(msg.sender, spender, _allowedGLENTY[msg.sender][spender]);
         return true;
     }
 
@@ -1142,13 +1138,13 @@ contract D100Token is ERC20("DEFI 100", "D100"), ERC677Token, Ownable {
             "paused"
         );
 
-        uint256 oldValue = _allowedD100[msg.sender][spender];
+        uint256 oldValue = _allowedGLENTY[msg.sender][spender];
         if (subtractedValue >= oldValue) {
-            _allowedD100[msg.sender][spender] = 0;
+            _allowedGLENTY[msg.sender][spender] = 0;
         } else {
-            _allowedD100[msg.sender][spender] = oldValue.sub(subtractedValue);
+            _allowedGLENTY[msg.sender][spender] = oldValue.sub(subtractedValue);
         }
-        emit Approval(msg.sender, spender, _allowedD100[msg.sender][spender]);
+        emit Approval(msg.sender, spender, _allowedGLENTY[msg.sender][spender]);
         return true;
     }
 }
